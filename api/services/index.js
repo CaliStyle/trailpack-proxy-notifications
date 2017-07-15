@@ -1,0 +1,1 @@
+exports.NotificationService = require('./NotificationService')

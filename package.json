@@ -1,0 +1,55 @@
+{
+  "name": "trailpack-proxy-notifications",
+  "version": "0.0.0",
+  "description": "Notifications - Trailpack for Proxy Engine",
+  "homepage": "http://trailsjs.io",
+  "author": {
+    "name": "scott-wyatt",
+    "email": "scottwyatt86@gmail.com",
+    "url": "https://cali-style.com"
+  },
+  "main": "index.js",
+  "keywords": [
+    "Proxy Engine",
+    "notifications",
+    "trailpack",
+    "trails",
+    "trailjs"
+  ],
+  "dependencies": {
+    "trailpack": "^2.0.0",
+    "sequelize": "^4.1.0",
+    "pg": "^6.1.5",
+    "proxy-engine-errors": "^1.0.1",
+    "trailpack-proxy-generics": "^1.0.1",
+    "trailpack-proxy-passport": "^1.0.6",
+    "trailpack-proxy-permissions": "^1.0.6"
+  },
+  "devDependencies": {
+    "lodash": "^4.11.1",
+    "eslint": "^3.17.1",
+    "eslint-config-trails": "^2.0.8",
+    "express": "^4.15.2",
+    "mocha": "^2.4.5",
+    "passport-local": "^1.0.0",
+    "sails-disk": "^0.10.10",
+    "sqlite3": "^3.1.4",
+    "smokesignals": "^2.0.0",
+    "trailpack-express": "^2.0.3",
+    "trailpack-proxy-engine": "^1.0.8",
+    "trailpack-router": "^2.0.0",
+    "trailpack-sequelize": "^2.0.0",
+    "trails": "^2.0.0"
+  },
+  "scripts": {
+    "test": "eslint --fix . && mocha"
+  },
+  "engines": {
+    "node": ">= 6.0.0"
+  },
+  "eslintConfig": {
+    "extends": "trails"
+  },
+  "repository": "git@github.com:CaliStyle/trailpack-proxy-notifications.git",
+  "license": "MIT"
+}

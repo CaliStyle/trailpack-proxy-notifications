@@ -1,0 +1,1 @@
+exports.NotificationController = require('./NotificationController')
