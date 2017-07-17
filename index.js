@@ -22,7 +22,22 @@ module.exports = class ProxyNotificationsTrailpack extends Trailpack {
     if (!_.includes(_.keys(this.app.packs), 'proxy-engine')) {
       return Promise.reject(new Error('This Trailpack requires trailpack-proxy-engine!'))
     }
-    return Promise.resolve()
+    // Configs
+    if (!this.app.config.proxyEngine) {
+      return Promise.reject(new Error('No configuration found at config.proxyEngine!'))
+    }
+
+    if (!this.app.config.proxyNotifications) {
+      return Promise.reject(new Error('No configuration found at config.proxyNotifications!'))
+    }
+
+    if (!this.app.config.proxyGenerics) {
+      return Promise.reject(new Error('No configuration found at config.proxyGenerics!'))
+    }
+
+    return Promise.all([
+      lib.Validator.validateProxyNotifications.config(this.app.config.proxyNotifications)
+    ])
   }
 
   /**

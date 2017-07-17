@@ -26,12 +26,7 @@ module.exports = class User extends Model {
             // Apply your specific stuff
             models.User.hasMany(models.Notification, {
               as: 'notifications',
-              // through: {
-              //   model: models.CartUser,
-              //   foreignKey: 'user_id',
-              //   unique: true,
-              //   constraints: false
-              // }
+              foreignKey: 'user_id'
             })
           },
           findByIdDefault: ModelPermissions.config(app, Sequelize).options.classMethods.findByIdDefault,
