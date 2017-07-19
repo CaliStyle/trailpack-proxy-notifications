@@ -38,8 +38,17 @@ module.exports = class Notification extends Model {
           },
           classMethods: {
             associate: (models) => {
-              models.Notification.belongsTo(models.User, {
-                foreignKey: 'user_id'
+              models.Notification.belongsToMany(models.User, {
+                as: 'users',
+                through: {
+                  model: models.ItemNotification,
+                  unique: false,
+                  scope: {
+                    model: 'user'
+                  }
+                },
+                foreignKey: 'notification_id',
+                constraints: false
               })
             },
             findByIdDefault: function(id, options) {
@@ -70,6 +79,11 @@ module.exports = class Notification extends Model {
               options = options || {}
               options = _.defaultsDeep(options, queryDefaults.Notification.default(app))
               return this.findAndCount(options)
+            },
+            createDefault: function(notification, options) {
+              options = options || {}
+              options = _.defaultsDeep(options, queryDefaults.Notification.default(app))
+              return this.create(notification, options)
             },
             resolve: function(notification, options){
               options = options || {}
@@ -117,19 +131,76 @@ module.exports = class Notification extends Model {
               this.sent_at = new Date(Date.now())
               return this
             },
-            resolveUser: function(options) {
+            send: function(options) {
+              options = options || {}
+              return this.resolveUsers({transaction: options.transaction || null})
+                .then(() => {
+                  if (this.users && this.users.length > 0) {
+                    const emailUsers = this.users.filter(user => user.email)
+                    const users = emailUsers.map(user => {
+                      if (user)
+                        return {
+                          email: user.email,
+                          name: user.first_name || app.config.proxyNotifications.to.default_name
+                        }
+                    })
+                    const message = {
+                      subject: this.type,
+                      html: this.message,
+                      to: users,
+                      from: {
+                        email: app.config.proxyNotifications.from.email,
+                        name: app.config.proxyNotifications.from.name
+                      }
+                    }
+                    if (this.template) {
+                      return app.services.EmailGenericService.sendTemplate(message)
+                    }
+                    else {
+                      return app.services.EmailGenericService.send(message)
+                    }
+                  }
+                  else {
+                    return []
+                  }
+                })
+                .then(emails => {
+                  // console.log('BROKE', emails)
+                  if (emails.length > 0) {
+                    return this.setSent().save({ transaction: options.transaction || null})
+                  }
+                  else {
+                    return this
+                  }
+                })
+            },
+            userOpened: function (user, options) {
+              options = options || {}
+              return app.orm['ItemNotification'].update({opened: true},{
+                where: {
+                  notification_id: this.id,
+                  model: 'user',
+                  model_id: user.id
+                },
+                transaction: options.transaction || null
+              })
+                .then(() => {
+                  return this
+                })
+            },
+            resolveUsers: function(options) {
               options = options || {}
               // console.log('BROKE HERE',this)
-              if (this.User) {
+              if (this.users) {
                 return Promise.resolve(this)
               }
               else {
-                return this.getUser({transaction: options.transaction || null})
-                  .then(user => {
-                    user = user || null
-                    this.User = user
-                    this.setDataValue('User', user)
-                    this.set('User', user)
+                return this.getUsers({transaction: options.transaction || null})
+                  .then(users => {
+                    users = users || []
+                    this.users = users
+                    this.setDataValue('users', users)
+                    this.set('users', users)
                     return this
                   })
               }

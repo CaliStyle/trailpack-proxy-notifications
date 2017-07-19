@@ -24,9 +24,21 @@ module.exports = class User extends Model {
             // Apply permission specific stuff
             ModelPermissions.config(app, Sequelize).options.classMethods.associate(models)
             // Apply your specific stuff
-            models.User.hasMany(models.Notification, {
+            // models.User.belongsToMany(models.Notification, {
+            //   as: 'notifications',
+            //   through
+            // })
+            models.User.belongsToMany(models.Notification, {
               as: 'notifications',
-              foreignKey: 'user_id'
+              through: {
+                model: models.ItemNotification,
+                unique: false,
+                scope: {
+                  model: 'user'
+                }
+              },
+              foreignKey: 'model_id',
+              constraints: false
             })
           },
           findByIdDefault: ModelPermissions.config(app, Sequelize).options.classMethods.findByIdDefault,

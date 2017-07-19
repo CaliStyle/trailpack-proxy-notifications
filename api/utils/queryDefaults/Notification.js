@@ -3,7 +3,8 @@ module.exports = {
     return {
       include: [
         {
-          model: app.orm['User']
+          model: app.orm['User'],
+          as: 'users'
         }
       ]
     }

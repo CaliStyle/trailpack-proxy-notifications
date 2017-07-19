@@ -4,6 +4,7 @@ const assert = require('assert')
 
 describe('NotificationService', () => {
   let NotificationService
+  let Notification
   let User
   let userId
 
@@ -11,6 +12,7 @@ describe('NotificationService', () => {
     assert(global.app.api.services['NotificationService'])
     assert(global.app.services['NotificationService'])
     NotificationService = global.app.services['NotificationService']
+    Notification = global.app.orm['Notification']
     User = global.app.orm['User']
   })
   it('should create a notification', (done) => {
@@ -42,9 +44,8 @@ describe('NotificationService', () => {
         assert.ok(user.id)
         return NotificationService.create({
           type: 'Test',
-          message: 'Test Message',
-          user_id: user.id
-        })
+          message: 'Test Message'
+        }, [user.id])
       })
       .then(notification => {
         // console.log('THIS NOTIFICATION', notification)
@@ -54,7 +55,7 @@ describe('NotificationService', () => {
         assert.equal(notification.message, 'Test Message')
         assert.equal(notification.sent, true)
         assert.ok(notification.sent_at)
-        assert.equal(notification.user_id, userId)
+        assert.equal(notification.users.length, 1)
 
         done()
       })
