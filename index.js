@@ -35,6 +35,19 @@ module.exports = class ProxyNotificationsTrailpack extends Trailpack {
       return Promise.reject(new Error('No configuration found at config.proxyGenerics!'))
     }
 
+    if (!this.app.config.proxyGenerics.email_provider) {
+      return Promise.reject(new Error('No configuration found at config.proxyGenerics.email_provider!'))
+    }
+    if (!this.app.config.proxyGenerics.email_provider.options) {
+      return Promise.reject(new Error('No configuration found at config.proxyGenerics.email_provider.options!'))
+    }
+    if (!this.app.config.proxyGenerics.email_provider.options.protocol) {
+      return Promise.reject(new Error('No configuration found at config.proxyGenerics.email_provider.options.protocol!'))
+    }
+    if (!this.app.config.proxyGenerics.email_provider.options.host) {
+      return Promise.reject(new Error('No configuration found at config.proxyGenerics.email_provider.options.host!'))
+    }
+
     return Promise.all([
       lib.Validator.validateProxyNotifications.config(this.app.config.proxyNotifications)
     ])

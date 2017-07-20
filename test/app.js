@@ -137,7 +137,10 @@ const App = {
     proxyGenerics: {
       email_provider: {
         adapter: require('./fixtures/FakeEmail'),
-        options: {}
+        options: {
+          host: 'test.com',
+          protocol: 'https'
+        }
       }
     },
     proxyEngine: {

@@ -87,17 +87,22 @@ module.exports = class NotificationController extends Controller {
     const limit = req.query.limit || 10
     const offset = req.query.offset || 0
     const sort = req.query.sort || 'created_at DESC'
-    const where = this.app.services.ProxyEngineService.jsonCritera(req.query.where)
+    // const where = this.app.services.ProxyEngineService.jsonCritera(req.query.where)
 
     if (!req.user || req.params.id) {
       const err = new Error('A user in session is required')
       return res.send(401, err)
     }
 
-    where.user_id = req.user.id
+    let id = req.params.id
+    if (!id && req.user) {
+      id = req.user.id
+    }
 
     Notification.findAndCountDefault({
-      where: where,
+      where: {
+        '$users.id$': id
+      },
       order: sort,
       offset: offset,
       limit: limit

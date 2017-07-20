@@ -18,14 +18,16 @@ describe('NotificationService', () => {
   it('should create a notification', (done) => {
     NotificationService.create({
       type: 'Test',
-      message: 'Test Message'
+      text: 'Test Message'
     })
       .then(notification => {
         // console.log('THIS NOTIFICATION', notification)
         assert.ok(notification.id)
         assert.ok(notification.token)
         assert.equal(notification.type, 'Test')
-        assert.equal(notification.message, 'Test Message')
+        assert.equal(notification.subject, 'Test')
+        assert.equal(notification.text, 'Test Message')
+        assert.equal(notification.html, '<p>Test Message</p>\n')
         assert.equal(notification.sent, false)
 
         done()
@@ -44,15 +46,17 @@ describe('NotificationService', () => {
         assert.ok(user.id)
         return NotificationService.create({
           type: 'Test',
-          message: 'Test Message'
+          text: 'Test Message'
         }, [user.id])
       })
       .then(notification => {
-        // console.log('THIS NOTIFICATION', notification)
+        console.log('THIS NOTIFICATION', notification)
         assert.ok(notification.id)
         assert.ok(notification.token)
         assert.equal(notification.type, 'Test')
-        assert.equal(notification.message, 'Test Message')
+        assert.equal(notification.subject, 'Test')
+        assert.equal(notification.text, 'Test Message')
+        assert.equal(notification.html, '<p>Test Message</p>\n')
         assert.equal(notification.sent, true)
         assert.ok(notification.sent_at)
         assert.equal(notification.users.length, 1)

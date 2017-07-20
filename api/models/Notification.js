@@ -1,3 +1,4 @@
+/* eslint new-cap: [0] */
 /* eslint no-console: [0] */
 'use strict'
 
@@ -5,6 +6,7 @@ const Model = require('trails/model')
 const shortId = require('shortid')
 const _ = require('lodash')
 const Errors = require('proxy-engine-errors')
+const helpers = require('proxy-engine-helpers')
 const queryDefaults = require('../utils/queryDefaults')
 
 /**
@@ -23,6 +25,12 @@ module.exports = class Notification extends Model {
             beforeCreate: (values, options, fn) => {
               if (!values.token) {
                 values.token = `notification_${shortId.generate()}`
+              }
+              if (!values.subject) {
+                values.subject = values.type
+              }
+              if (!values.html){
+                values.html = app.services.RenderGenericService.renderSync(values.text).document
               }
               fn()
             },
@@ -141,19 +149,25 @@ module.exports = class Notification extends Model {
                       if (user)
                         return {
                           email: user.email,
-                          name: user.first_name || app.config.proxyNotifications.to.default_name
+                          name: user.first_name || user.username || app.config.proxyNotifications.to.default_name
                         }
                     })
                     const message = {
-                      subject: this.type,
-                      html: this.message,
+                      protocol: this.protocol,
+                      host: this.host,
+                      subject: this.subject,
+                      text: this.text,
+                      html: this.html,
                       to: users,
+                      reply_to: this.reply_to || app.config.proxyNotifications.from.email,
                       from: {
                         email: app.config.proxyNotifications.from.email,
                         name: app.config.proxyNotifications.from.name
-                      }
+                      },
+                      template_name: this.template_name,
+                      template_content: this.template_content
                     }
-                    if (this.template) {
+                    if (this.template_name) {
                       return app.services.EmailGenericService.sendTemplate(message)
                     }
                     else {
@@ -176,7 +190,7 @@ module.exports = class Notification extends Model {
             },
             userOpened: function (user, options) {
               options = options || {}
-              return app.orm['ItemNotification'].update({opened: true},{
+              return app.orm['ItemNotification'].update({ opened: true },{
                 where: {
                   notification_id: this.id,
                   model: 'user',
@@ -190,7 +204,6 @@ module.exports = class Notification extends Model {
             },
             resolveUsers: function(options) {
               options = options || {}
-              // console.log('BROKE HERE',this)
               if (this.users) {
                 return Promise.resolve(this)
               }
@@ -221,13 +234,35 @@ module.exports = class Notification extends Model {
           type: Sequelize.STRING,
           unique: true
         },
+        protocol: {
+          type: Sequelize.STRING,
+          defaultValue: app.config.proxyGenerics.email_provider.options.protocol
+        },
+        host: {
+          type: Sequelize.STRING,
+          defaultValue: app.config.proxyGenerics.email_provider.options.host
+        },
+        reply_to: {
+          type: Sequelize.STRING
+        },
         type: {
+          type: Sequelize.STRING,
+          allowNull: false
+        },
+        subject: {
           type: Sequelize.STRING
         },
-        template: {
+        template_name: {
           type: Sequelize.STRING
         },
-        message: {
+        template_content: helpers.JSONB('Product', app, Sequelize, 'discounted_lines', {
+          defaultValue: {}
+        }),
+        text: {
+          type: Sequelize.TEXT,
+          allowNull: false
+        },
+        html: {
           type: Sequelize.TEXT
         },
         sent: {
