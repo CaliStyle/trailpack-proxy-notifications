@@ -4,6 +4,9 @@ const _ = require('lodash')
 const smokesignals = require('smokesignals')
 const fs = require('fs')
 const path = require('path')
+const ModelPassport = require('trailpack-proxy-passport/api/models/User')
+const ModelPermissions = require('trailpack-proxy-permissions/api/models/User')
+const Model = require('trails/model')
 
 const SERVER = process.env.SERVER || 'express'
 const ORM = process.env.ORM || 'sequelize'
@@ -79,7 +82,48 @@ if ( SERVER == 'express' ) {
 }
 
 const App = {
-  api: require('../api'),
+  api: {
+    models: {
+      User: class User extends ModelPassport {
+        static config(app, Sequelize) {
+          return {
+            options: {
+              underscored: true,
+              hooks: {
+                afterCreate: ModelPermissions.config(app, Sequelize).options.hooks.afterCreate
+              },
+              classMethods: {
+                associate: (models) => {
+                  models.User.belongsToMany(models.Notification, {
+                    as: 'notifications',
+                    through: {
+                      model: models.ItemNotification,
+                      unique: false,
+                      scope: {
+                        model: 'user'
+                      }
+                    },
+                    foreignKey: 'model_id',
+                    constraints: false
+                  })
+                  ModelPassport.config(app, Sequelize).options.classMethods.associate(models)
+                  ModelPermissions.config(app, Sequelize).options.classMethods.associate(models)
+                },
+                findByIdDefault: ModelPermissions.config(app, Sequelize).options.classMethods.findByIdDefault,
+                findOneDefault: ModelPermissions.config(app, Sequelize).options.classMethods.findOneDefault
+              },
+              instanceMethods: _.defaults({}, ModelPermissions.config(app, Sequelize).options.instanceMethods)
+            }
+          }
+        }
+        static schema(app, Sequelize) {
+          const PassportTrailpackSchema = ModelPassport.schema(app, Sequelize)
+          const PermissionsTrailpackSchema = ModelPermissions.schema(app, Sequelize)
+          return _.defaults({}, PassportTrailpackSchema, PermissionsTrailpackSchema)
+        }
+      }
+    }
+  },
   pkg: {
     name: 'trailpack-proxy-cart-test',
     version: '1.0.0'
@@ -105,6 +149,18 @@ const App = {
     web: web,
     session: {
       secret: 'proxyNotifications'
+    },
+    proxyNotifications: {
+      to: {
+        // The default name to use if the user has no specified name
+        default_name: 'Valued Customer'
+      },
+      from: {
+        // The email to send this notification from
+        email: 'test.com',
+        // The name of the email sending this notification
+        name: 'Test'
+      }
     },
     proxyPassport: {
       strategies: {
@@ -154,6 +210,7 @@ const dbPath = path.resolve(__dirname, './test.sqlite')
 if (fs.existsSync(dbPath)) {
   fs.unlinkSync(dbPath)
 }
+
 const uploadPath = path.resolve(__dirname, './test.uploads.sqlite')
 if (fs.existsSync(uploadPath)) {
   fs.unlinkSync(uploadPath)

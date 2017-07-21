@@ -10,8 +10,8 @@ module.exports = {
   },
   from: {
     // The email to send this notification from
-    email: 'info@calistyletechnologies.com',
+    email: '',
     // The name of the email sending this notification
-    name: 'Cali Style Technologies'
+    name: ''
   }
 }

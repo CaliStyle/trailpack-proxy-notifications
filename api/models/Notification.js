@@ -143,7 +143,7 @@ module.exports = class Notification extends Model {
               options = options || {}
               return this.resolveUsers({transaction: options.transaction || null})
                 .then(() => {
-                  if (this.users && this.users.length > 0) {
+                  if (this.users && this.users.length > 0 && this.users.filter(user => user.email).length > 0) {
                     const emailUsers = this.users.filter(user => user.email)
                     const users = emailUsers.map(user => {
                       if (user)
