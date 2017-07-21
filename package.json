@@ -1,6 +1,6 @@
 {
   "name": "trailpack-proxy-notifications",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "Notifications - Trailpack for Proxy Engine",
   "homepage": "http://trailsjs.io",
   "author": {
@@ -22,6 +22,7 @@
     "proxy-engine-helpers": "^1.0.6",
     "proxy-generics-render": "0.0.3",
     "sequelize": "^4.1.0",
+    "shortid": "^2.2.8",
     "trailpack": "^2.0.0",
     "trailpack-proxy-generics": "^1.0.1",
     "trailpack-proxy-passport": "^1.0.6",

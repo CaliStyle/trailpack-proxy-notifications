@@ -18,7 +18,7 @@ const packs = [
   require('trailpack-proxy-engine'),
   require('trailpack-proxy-permissions'),
   require('trailpack-proxy-generics'),
-  require('../') // trailpack-proxy-cart
+  require('../') // trailpack-proxy-notifications
 ]
 
 let web = {}
