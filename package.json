@@ -25,7 +25,7 @@
     "shortid": "^2.2.8",
     "trailpack": "^2.0.0",
     "trailpack-proxy-generics": "^1.0.1",
-    "trailpack-proxy-passport": "^1.0.6",
+    "trailpack-proxy-passport": "^1.0.7",
     "trailpack-proxy-permissions": "^1.0.6"
   },
   "devDependencies": {
