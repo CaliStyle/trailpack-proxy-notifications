@@ -141,9 +141,18 @@ module.exports = class Notification extends Model {
             },
             send: function(options) {
               options = options || {}
+              if (!this.send_email) {
+                return Promise.resolve(this)
+              }
               return this.resolveUsers({transaction: options.transaction || null})
                 .then(() => {
-                  if (this.users && this.users.length > 0 && this.users.filter(user => user.email).length > 0) {
+                  const emailUsers = this.users && this.users.length > 0
+                    ? this.users.filter(user => {
+                      // Migration Insurance
+                      user.preferences = user.preferences || {}
+                      return user.email && user.preferences['emails'] !== false
+                    }) : []
+                  if (emailUsers.length > 0) {
                     const emailUsers = this.users.filter(user => user.email)
                     const users = emailUsers.map(user => {
                       if (user)
@@ -234,41 +243,58 @@ module.exports = class Notification extends Model {
           type: Sequelize.STRING,
           unique: true
         },
+        // Protocol to send email
         protocol: {
           type: Sequelize.STRING,
           defaultValue: app.config.proxyGenerics.email_provider.options.protocol
         },
+        // Host to send email from
         host: {
           type: Sequelize.STRING,
           defaultValue: app.config.proxyGenerics.email_provider.options.host
         },
+        // Reply to value
         reply_to: {
-          type: Sequelize.STRING
+          type: Sequelize.STRING,
+          defaultValue: app.config.proxyGenerics.email_provider.options.reply_to
         },
+        // The type of notification in dot notation
         type: {
           type: Sequelize.STRING,
           allowNull: false
         },
+        // The subject of the notification and email
         subject: {
           type: Sequelize.STRING
         },
+        // The email template name for GenericEmailProvider
         template_name: {
           type: Sequelize.STRING
         },
+        // Content for email template for GenericEmailProvider
         template_content: helpers.JSONB('Product', app, Sequelize, 'discounted_lines', {
           defaultValue: {}
         }),
+        // Text version of the notification
         text: {
           type: Sequelize.TEXT,
           allowNull: false
         },
+        // Html version of the notification
         html: {
           type: Sequelize.TEXT
         },
+        // If an email copy of the notification should be sent
+        send_email: {
+          type: Sequelize.BOOLEAN,
+          defaultValue: true
+        },
+        // If the email has been sent
         sent: {
           type: Sequelize.BOOLEAN,
           defaultValue: false
         },
+        // When the email was sent
         sent_at: {
           type: Sequelize.DATE
         }
