@@ -9,7 +9,7 @@ const Errors = require('proxy-engine-errors')
  */
 module.exports = class NotificationController extends Controller {
   /**
-   *
+   * Find notification by id
    * @param req
    * @param res
    */
@@ -29,7 +29,7 @@ module.exports = class NotificationController extends Controller {
   }
 
   /**
-   *
+   * Finds notification by token
    * @param req
    * @param res
    */
@@ -40,6 +40,26 @@ module.exports = class NotificationController extends Controller {
       .then(notification => {
         if (!notification) {
           throw new Errors.FoundError(Error(`Notification handle ${ req.params.token } not found`))
+        }
+        return res.json(notification)
+      })
+      .catch(err => {
+        return res.serverError(err)
+      })
+  }
+
+  /**
+   * Resolves either a notification id or a token
+   * @param req
+   * @param res
+   */
+  resolve(req, res) {
+    const orm = this.app.orm
+    const Notification = orm['Notification']
+    Notification.resolve(req.params.id)
+      .then(notification => {
+        if (!notification) {
+          throw new Errors.FoundError(Error(`Notification handle ${ req.params.id } not found`))
         }
         return res.json(notification)
       })
