@@ -14,8 +14,8 @@ const DIALECT = process.env.DIALECT || 'sqlite'
 
 const packs = [
   require('trailpack-router'),
-  require('trailpack-proxy-passport'),
   require('trailpack-proxy-engine'),
+  require('trailpack-proxy-passport'),
   require('trailpack-proxy-permissions'),
   require('trailpack-proxy-generics'),
   require('../') // trailpack-proxy-notifications
@@ -42,14 +42,14 @@ else if (ORM === 'sequelize') {
   packs.push(require('trailpack-sequelize'))
   if (DIALECT == 'postgres') {
     stores.sqlitedev = {
-      database: 'ProxyCart',
+      database: 'ProxyNotifications',
       host: '127.0.0.1',
       dialect: 'postgres'
     }
   }
   else {
     stores.sqlitedev = {
-      database: 'ProxyCart',
+      database: 'ProxyNotifications',
       storage: './test/test.sqlite',
       host: '127.0.0.1',
       dialect: 'sqlite'

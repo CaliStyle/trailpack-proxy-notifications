@@ -4,7 +4,8 @@ module.exports = {
       include: [
         {
           model: app.orm['User'],
-          as: 'users'
+          as: 'users',
+          duplicating: false
         }
       ]
     }
