@@ -1,6 +1,6 @@
 {
   "name": "trailpack-proxy-notifications",
-  "version": "1.0.2",
+  "version": "1.0.4",
   "description": "Notifications - Trailpack for Proxy Engine",
   "homepage": "http://trailsjs.io",
   "author": {
@@ -26,7 +26,7 @@
     "trailpack": "^2.0.0",
     "trailpack-proxy-generics": "^1.0.5",
     "trailpack-proxy-passport": "^1.0.8",
-    "trailpack-proxy-permissions": "^1.0.8"
+    "trailpack-proxy-permissions": "^1.0.10"
   },
   "devDependencies": {
     "eslint": "^3.17.1",

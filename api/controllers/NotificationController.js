@@ -22,7 +22,10 @@ module.exports = class NotificationController extends Controller {
         if (!notification) {
           throw new Errors.FoundError(Error(`Notification id ${ req.params.id } not found`))
         }
-        return res.json(notification)
+        return this.app.services.ProxyPermissionsService.sanitizeResult(req, notification)
+      })
+      .then(result => {
+        return res.json(result)
       })
       .catch(err => {
         return res.serverError(err)
@@ -42,7 +45,10 @@ module.exports = class NotificationController extends Controller {
         if (!notification) {
           throw new Errors.FoundError(Error(`Notification handle ${ req.params.token } not found`))
         }
-        return res.json(notification)
+        return this.app.services.ProxyPermissionsService.sanitizeResult(req, notification)
+      })
+      .then(result => {
+        return res.json(result)
       })
       .catch(err => {
         return res.serverError(err)
@@ -62,7 +68,10 @@ module.exports = class NotificationController extends Controller {
         if (!notification) {
           throw new Errors.FoundError(Error(`Notification ${ req.params.notification } not found`))
         }
-        return res.json(notification)
+        return this.app.services.ProxyPermissionsService.sanitizeResult(req, notification)
+      })
+      .then(result => {
+        return res.json(result)
       })
       .catch(err => {
         return res.serverError(err)
@@ -90,7 +99,10 @@ module.exports = class NotificationController extends Controller {
       .then(notifications => {
         // Paginate
         this.app.services.ProxyEngineService.paginate(res, notifications.count, limit, offset, sort)
-        return res.json(notifications.rows)
+        return this.app.services.ProxyPermissionsService.sanitizeResult(req, notifications.rows)
+      })
+      .then(result => {
+        return res.json(result)
       })
       .catch(err => {
         return res.serverError(err)
@@ -135,7 +147,10 @@ module.exports = class NotificationController extends Controller {
       .then(notifications => {
         // Paginate
         this.app.services.ProxyEngineService.paginate(res, notifications.count, limit, offset, sort)
-        return res.json(notifications.rows)
+        return this.app.services.ProxyPermissionsService.sanitizeResult(req, notifications.rows)
+      })
+      .then(result => {
+        return res.json(result)
       })
       .catch(err => {
         return res.serverError(err)

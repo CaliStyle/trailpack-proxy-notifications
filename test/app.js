@@ -110,7 +110,8 @@ const App = {
                   ModelPermissions.config(app, Sequelize).options.classMethods.associate(models)
                 },
                 findByIdDefault: ModelPermissions.config(app, Sequelize).options.classMethods.findByIdDefault,
-                findOneDefault: ModelPermissions.config(app, Sequelize).options.classMethods.findOneDefault
+                findOneDefault: ModelPermissions.config(app, Sequelize).options.classMethods.findOneDefault,
+                resolve: ModelPassport.config(app, Sequelize).options.classMethods.resolve
               },
               instanceMethods: _.defaults({}, ModelPermissions.config(app, Sequelize).options.instanceMethods)
             }

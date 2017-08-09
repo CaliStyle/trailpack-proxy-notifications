@@ -48,7 +48,7 @@ module.exports = class NotificationService extends Service {
           throw new Errors.FoundError(Error(`Notification ${notification} not found`))
         }
         resNotification = foundNotification
-        return resNotification.send()
+        return resNotification.send({transaction: options.transaction || null})
       })
   }
 
