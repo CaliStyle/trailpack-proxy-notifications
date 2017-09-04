@@ -141,7 +141,7 @@ module.exports = class Notification extends Model {
             },
             send: function(options) {
               options = options || {}
-              const sendType = this.template_name ? 'sendTemplate' : 'send'
+              const sendType = this.template_name && this.template_name !== '' ? 'sendTemplate' : 'send'
               if (this.send_email && this.send_email === false) {
                 return Promise.resolve(this)
               }
