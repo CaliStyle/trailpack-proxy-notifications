@@ -68,4 +68,108 @@ describe('NotificationService', () => {
         done(err)
       })
   })
+  it('should create a notification and not send email because user has no email', (done) => {
+    User.create({
+      username: 'scott',
+      first_name: 'Scott'
+    })
+      .then(user => {
+        userId = user.id
+        assert.ok(user.id)
+        return NotificationService.create({
+          type: 'Test',
+          text: 'Test Message'
+        }, [user.id])
+      })
+      .then(notification => {
+        // console.log('THIS NOTIFICATION', notification)
+        assert.ok(notification.id)
+        assert.ok(notification.token)
+        assert.equal(notification.type, 'Test')
+        assert.equal(notification.subject, 'Test')
+        assert.equal(notification.text, 'Test Message')
+        assert.equal(notification.html, '<p>Test Message</p>\n')
+        assert.equal(notification.send_email, true)
+        assert.equal(notification.sent, false)
+        assert.equal(notification.sent_at, null)
+        assert.equal(notification.users.length, 1)
+
+        done()
+      })
+      .catch(err => {
+        done(err)
+      })
+  })
+  it('should create a notification and not send email because email false', (done) => {
+    User.create({
+      email: 'scott+1@calistyletechnologies.com',
+      first_name: 'Scott',
+      preferences: {
+        email: false
+      }
+    })
+      .then(user => {
+        userId = user.id
+        assert.ok(user.id)
+        return NotificationService.create({
+          type: 'Test',
+          text: 'Test Message'
+        }, [user.id])
+      })
+      .then(notification => {
+        // console.log('THIS NOTIFICATION', notification)
+        assert.ok(notification.id)
+        assert.ok(notification.token)
+        assert.equal(notification.type, 'Test')
+        assert.equal(notification.subject, 'Test')
+        assert.equal(notification.text, 'Test Message')
+        assert.equal(notification.html, '<p>Test Message</p>\n')
+        assert.equal(notification.send_email, true)
+        assert.equal(notification.sent, false)
+        assert.equal(notification.sent_at, null)
+        assert.equal(notification.users.length, 1)
+
+        done()
+      })
+      .catch(err => {
+        done(err)
+      })
+  })
+  it('should create a notification and not send email because email type false', (done) => {
+    User.create({
+      email: 'scott+2@calistyletechnologies.com',
+      first_name: 'Scott',
+      preferences: {
+        email: {
+          test: false
+        }
+      }
+    })
+      .then(user => {
+        userId = user.id
+        assert.ok(user.id)
+        return NotificationService.create({
+          type: 'test',
+          text: 'Test Message'
+        }, [user.id])
+      })
+      .then(notification => {
+        // console.log('THIS NOTIFICATION', notification)
+        assert.ok(notification.id)
+        assert.ok(notification.token)
+        assert.equal(notification.type, 'test')
+        assert.equal(notification.subject, 'test')
+        assert.equal(notification.text, 'Test Message')
+        assert.equal(notification.html, '<p>Test Message</p>\n')
+        assert.equal(notification.send_email, true)
+        assert.equal(notification.sent, false)
+        assert.equal(notification.sent_at, null)
+        assert.equal(notification.users.length, 1)
+
+        done()
+      })
+      .catch(err => {
+        done(err)
+      })
+  })
 })

@@ -141,17 +141,43 @@ module.exports = class Notification extends Model {
             },
             send: function(options) {
               options = options || {}
-              if (!this.send_email) {
+              const sendType = this.template_name ? 'sendTemplate' : 'send'
+              if (this.send_email && this.send_email === false) {
                 return Promise.resolve(this)
               }
+
               return this.resolveUsers({transaction: options.transaction || null})
                 .then(() => {
+                  // List of eligible users
                   const emailUsers = this.users && this.users.length > 0
                     ? this.users.filter(user => {
+                      let send = true
                       // Migration Insurance
                       user.preferences = user.preferences || {}
-                      return user.email && user.preferences['emails'] !== false
+                      user.preferences.email = typeof user.preferences.email !== 'undefined' ?
+                        user.preferences.email : {}
+
+                      // If user has no email
+                      if (typeof user.email === 'undefined' || !user.email) {
+                        send = false
+                      }
+                      // If user's email preferences are all false
+                      else if (
+                        typeof user.preferences.email !== 'undefined'
+                        && user.preferences.email === false
+                      ) {
+                        send = false
+                      }
+                      // If user doesn't want this type of email
+                      else if (
+                        typeof user.preferences.email !== 'undefined'
+                        && user.preferences.email[this.type] === false
+                      ) {
+                        send = false
+                      }
+                      return send === true
                     }) : []
+
                   if (emailUsers.length > 0) {
                     const emailUsers = this.users.filter(user => user.email)
                     const users = emailUsers.map(user => {
@@ -176,20 +202,23 @@ module.exports = class Notification extends Model {
                       template_name: this.template_name,
                       template_content: this.template_content
                     }
-                    if (this.template_name) {
-                      return app.services.EmailGenericService.sendTemplate(message)
-                    }
-                    else {
-                      return app.services.EmailGenericService.send(message)
-                    }
+
+                    return app.services.EmailGenericService[sendType](message)
+                      .catch(err => {
+                        app.log.error(err)
+                        return null
+                      })
+
                   }
                   else {
                     return []
                   }
                 })
                 .then(emails => {
-                  // console.log('BROKE', emails)
+                  emails = emails.filter(email => email)
+                  // console.log('TOTAL SENT', emails.length, this)
                   if (emails.length > 0) {
+                    console.log('SET SENT', this.token, emails.length)
                     return this.setSent().save({ transaction: options.transaction || null})
                   }
                   else {
