@@ -142,7 +142,8 @@ module.exports = class Notification extends Model {
             send: function(options) {
               options = options || {}
               const sendType = this.template_name && this.template_name !== '' ? 'sendTemplate' : 'send'
-              if (this.send_email && this.send_email === false) {
+
+              if (typeof this.send_email !== 'undefined' && this.send_email === false) {
                 return Promise.resolve(this)
               }
 
@@ -218,7 +219,7 @@ module.exports = class Notification extends Model {
                   emails = emails.filter(email => email)
                   // console.log('TOTAL SENT', emails.length, this)
                   if (emails.length > 0) {
-                    console.log('SET SENT', this.token, emails.length)
+                    app.log.debug('EMAILS SENT', this.token, emails.length)
                     return this.setSent().save({ transaction: options.transaction || null})
                   }
                   else {

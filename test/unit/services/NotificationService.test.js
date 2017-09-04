@@ -68,6 +68,39 @@ describe('NotificationService', () => {
         done(err)
       })
   })
+  it('should create a notification and send it with empty preferences', (done) => {
+    User.create({
+      email: 'scott+1@calistyletechnologies.com',
+      first_name: 'Scott',
+      preferences: {}
+    })
+      .then(user => {
+        userId = user.id
+        assert.ok(user.id)
+        return NotificationService.create({
+          type: 'Test',
+          text: 'Test Message'
+        }, [user.id])
+      })
+      .then(notification => {
+        // console.log('THIS NOTIFICATION', notification)
+        assert.ok(notification.id)
+        assert.ok(notification.token)
+        assert.equal(notification.type, 'Test')
+        assert.equal(notification.subject, 'Test')
+        assert.equal(notification.text, 'Test Message')
+        assert.equal(notification.html, '<p>Test Message</p>\n')
+        assert.equal(notification.send_email, true)
+        assert.equal(notification.sent, true)
+        assert.ok(notification.sent_at)
+        assert.equal(notification.users.length, 1)
+
+        done()
+      })
+      .catch(err => {
+        done(err)
+      })
+  })
   it('should create a notification and not send email because user has no email', (done) => {
     User.create({
       username: 'scott',
@@ -102,7 +135,7 @@ describe('NotificationService', () => {
   })
   it('should create a notification and not send email because email false', (done) => {
     User.create({
-      email: 'scott+1@calistyletechnologies.com',
+      email: 'scott+2@calistyletechnologies.com',
       first_name: 'Scott',
       preferences: {
         email: false
@@ -137,7 +170,7 @@ describe('NotificationService', () => {
   })
   it('should create a notification and not send email because email type false', (done) => {
     User.create({
-      email: 'scott+2@calistyletechnologies.com',
+      email: 'scott+3@calistyletechnologies.com',
       first_name: 'Scott',
       preferences: {
         email: {
