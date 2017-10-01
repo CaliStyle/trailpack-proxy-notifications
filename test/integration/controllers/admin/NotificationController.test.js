@@ -2,9 +2,10 @@
 /* global describe, it */
 const assert = require('assert')
 const supertest = require('supertest')
+const _ = require('lodash')
 
-describe('NotificationController', () => {
-  let request, agent
+describe('Admin NotificationController', () => {
+  let request, adminUser
   let NotificationService
   let Notification
   let User
@@ -12,9 +13,9 @@ describe('NotificationController', () => {
 
   before((done) => {
     request = supertest('http://localhost:3000')
-    agent = supertest.agent(global.app.packs.express.server)
+    adminUser = supertest.agent(global.app.packs.express.server)
 
-    agent
+    adminUser
       .post('/auth/local')
       .set('Accept', 'application/json') //set header for this test
       .send({username: 'admin', password: 'admin1234'})
@@ -34,8 +35,8 @@ describe('NotificationController', () => {
   })
 
   it('should get notifications', (done) => {
-    agent
-      .get('/notification')
+    adminUser
+      .get('/notifications')
       .expect(200)
       .end((err, res) => {
         // console.log('NOTIFICATIONS',res.body)
@@ -43,6 +44,14 @@ describe('NotificationController', () => {
         assert.ok(res.headers['x-pagination-pages'])
         assert.ok(res.headers['x-pagination-page'])
         assert.ok(res.headers['x-pagination-limit'])
+        assert.ok(res.headers['x-pagination-offset'])
+
+        assert.equal(_.isNumber(parseInt(res.headers['x-pagination-total'])), true)
+        assert.equal(_.isNumber(parseInt(res.headers['x-pagination-offset'])), true)
+        assert.equal(_.isNumber(parseInt(res.headers['x-pagination-limit'])), true)
+        assert.equal(_.isNumber(parseInt(res.headers['x-pagination-page'])), true)
+        assert.equal(_.isNumber(parseInt(res.headers['x-pagination-pages'])), true)
+
         assert.equal(res.body.length, 0)
         assert.equal(res.headers['x-pagination-total'], '0')
         done(err)
@@ -50,7 +59,7 @@ describe('NotificationController', () => {
   })
 
   it('should get user notifications by user id', (done) => {
-    agent
+    adminUser
       .get(`/user/${ userID }/notifications`)
       .expect(200)
       .end((err, res) => {
@@ -59,6 +68,14 @@ describe('NotificationController', () => {
         assert.ok(res.headers['x-pagination-pages'])
         assert.ok(res.headers['x-pagination-page'])
         assert.ok(res.headers['x-pagination-limit'])
+        assert.ok(res.headers['x-pagination-offset'])
+
+        assert.equal(_.isNumber(parseInt(res.headers['x-pagination-total'])), true)
+        assert.equal(_.isNumber(parseInt(res.headers['x-pagination-offset'])), true)
+        assert.equal(_.isNumber(parseInt(res.headers['x-pagination-limit'])), true)
+        assert.equal(_.isNumber(parseInt(res.headers['x-pagination-page'])), true)
+        assert.equal(_.isNumber(parseInt(res.headers['x-pagination-pages'])), true)
+
         assert.equal(res.body.length, 0)
         assert.equal(res.headers['x-pagination-total'], '0')
 
@@ -66,15 +83,22 @@ describe('NotificationController', () => {
       })
   })
   it('should get user notifications', (done) => {
-    agent
+    adminUser
       .get('/user/notifications')
       .expect(200)
       .end((err, res) => {
-        // console.log('NOTIFICATIONS', res.body)
         assert.ok(res.headers['x-pagination-total'])
         assert.ok(res.headers['x-pagination-pages'])
         assert.ok(res.headers['x-pagination-page'])
         assert.ok(res.headers['x-pagination-limit'])
+        assert.ok(res.headers['x-pagination-offset'])
+
+        assert.equal(_.isNumber(parseInt(res.headers['x-pagination-total'])), true)
+        assert.equal(_.isNumber(parseInt(res.headers['x-pagination-offset'])), true)
+        assert.equal(_.isNumber(parseInt(res.headers['x-pagination-limit'])), true)
+        assert.equal(_.isNumber(parseInt(res.headers['x-pagination-page'])), true)
+        assert.equal(_.isNumber(parseInt(res.headers['x-pagination-pages'])), true)
+
         assert.equal(res.body.length, 0)
         assert.equal(res.headers['x-pagination-total'], '0')
 
