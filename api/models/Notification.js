@@ -4,6 +4,8 @@
 
 const Model = require('trails/model')
 const shortId = require('shortid')
+// shortId.characters('0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ')
+
 const _ = require('lodash')
 const Errors = require('proxy-engine-errors')
 const helpers = require('proxy-engine-helpers')
@@ -60,37 +62,56 @@ module.exports = class Notification extends Model {
               })
             },
             findByIdDefault: function(id, options) {
-              options = options || {}
-              options = _.defaultsDeep(options, queryDefaults.Notification.default(app))
+              options = app.services.ProxyEngineService.mergeOptionDefaults(
+                queryDefaults.Notification.default(app),
+                options || {}
+              )
+
               return this.findById(id, options)
             },
             findByTokenDefault: function(token, options) {
-              options = options || {}
-              options = _.defaultsDeep(options, queryDefaults.Notification.default(app), {
-                where: {
-                  token: token
+              options = app.services.ProxyEngineService.mergeOptionDefaults(
+                queryDefaults.Notification.default(app),
+                options || {},
+                {
+                  where: {
+                    token: token
+                  }
                 }
-              })
+              )
+
               return this.findOne(options)
             },
             findOneDefault: function(options) {
-              options = options || {}
-              options = _.defaultsDeep(options, queryDefaults.Notification.default(app))
+              options = app.services.ProxyEngineService.mergeOptionDefaults(
+                queryDefaults.Notification.default(app),
+                options || {}
+              )
+
               return this.findOne(options)
             },
             findAllDefault: function(options) {
-              options = options || {}
-              options = _.defaultsDeep(options, queryDefaults.Notification.default(app))
+              options = app.services.ProxyEngineService.mergeOptionDefaults(
+                queryDefaults.Notification.default(app),
+                options || {}
+              )
+
               return this.findAll(options)
             },
             findAndCountDefault: function(options) {
-              options = options || {}
-              options = _.defaultsDeep(options, queryDefaults.Notification.default(app))
+              options = app.services.ProxyEngineService.mergeOptionDefaults(
+                queryDefaults.Notification.default(app),
+                options || {}
+              )
+
               return this.findAndCount(options)
             },
             createDefault: function(notification, options) {
-              options = options || {}
-              options = _.defaultsDeep(options, queryDefaults.Notification.default(app))
+              options = app.services.ProxyEngineService.mergeOptionDefaults(
+                queryDefaults.Notification.default(app),
+                options || {}
+              )
+
               return this.create(notification, options)
             },
             resolve: function(notification, options){
@@ -147,38 +168,8 @@ module.exports = class Notification extends Model {
                 return Promise.resolve(this)
               }
 
-              return this.resolveUsers({transaction: options.transaction || null})
-                .then(() => {
-                  // List of eligible users
-                  const emailUsers = this.users && this.users.length > 0
-                    ? this.users.filter(user => {
-                      let send = true
-                      // Migration Insurance
-                      user.preferences = user.preferences || {}
-                      user.preferences.email = typeof user.preferences.email !== 'undefined' ?
-                        user.preferences.email : {}
-
-                      // If user has no email
-                      if (typeof user.email === 'undefined' || !user.email) {
-                        send = false
-                      }
-                      // If user's email preferences are all false
-                      else if (
-                        typeof user.preferences.email !== 'undefined'
-                        && user.preferences.email === false
-                      ) {
-                        send = false
-                      }
-                      // If user doesn't want this type of email
-                      else if (
-                        typeof user.preferences.email !== 'undefined'
-                        && user.preferences.email[this.type] === false
-                      ) {
-                        send = false
-                      }
-                      return send === true
-                    }) : []
-
+              return this.resolveEmailUsers({transaction: options.transaction || null})
+                .then(emailUsers => {
                   if (emailUsers.length > 0) {
                     const emailUsers = this.users.filter(user => user.email)
                     const users = emailUsers.map(user => {
@@ -243,7 +234,7 @@ module.exports = class Notification extends Model {
             },
             resolveUsers: function(options) {
               options = options || {}
-              if (this.users) {
+              if (this.users && options.reload !== true) {
                 return Promise.resolve(this)
               }
               else {
@@ -256,6 +247,80 @@ module.exports = class Notification extends Model {
                     return this
                   })
               }
+            },
+            /**
+             *
+             * @param options
+             * @returns {Promise.<TResult>}
+             */
+            // TODO, refactor to something pleasant.
+            resolveEmailUsers: function(options) {
+              options = options || {}
+              let emailUsers = []
+              return this.resolveUsers({transaction: options.transaction || null})
+                .then(() => {
+                  if (this.users.length > 0) {
+                    // List of eligible users
+                    emailUsers = this.users.map(user => {
+                      let send = true
+
+                      // If user has no email
+                      if (typeof user.email === 'undefined' || !user.email) {
+                        send = false
+                        // return
+                      }
+
+                      // Migration Insurance
+                      if (!user.preferences) {
+                        user.preferences = {}
+                      }
+                      if (typeof user.preferences === 'string') {
+                        try {
+                          user.preferences = JSON.parse(user.preferences)
+                        }
+                        catch (err) {
+                          app.log.error('Unable to parse user.preferences')
+                          user.preferences = {}
+                        }
+                      }
+                      if (user.preferences.email === false) {
+                        send = false
+                      }
+                      if (user.preferences.email === 'undefined') {
+                        user.preferences.email = {}
+                      }
+
+                      // console.log('BROKE', typeof user.preferences, user.preferences)
+                      // user.preferences = user.preferences || {}
+                      // user.preferences.email = typeof user.preferences.email !== 'undefined' ?
+                      //   user.preferences.email : {}
+
+                      // If user's email preferences are all false
+                      if (
+                        typeof user.preferences.email !== 'undefined'
+                        && user.preferences.email === false
+                      ) {
+                        send = false
+                      }
+                      // If user doesn't want this type of email
+                      else if (
+                        typeof user.preferences.email !== 'undefined'
+                        && user.preferences.email[this.type] === false
+                      ) {
+                        send = false
+                      }
+                      return send === true
+                    })
+                  }
+                  // Remove empty values in the mapped array
+                  emailUsers = emailUsers.filter(n => n)
+
+                  return emailUsers
+                })
+                .catch(err => {
+                  app.log.error(err)
+                  return emailUsers
+                })
             }
           }
         }

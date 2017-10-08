@@ -9,7 +9,7 @@ describe('Registered NotificationController', () => {
   let NotificationService
   let Notification
   let User
-  let userID
+  let userID, notificationToken
 
   before((done) => {
     request = supertest('http://localhost:3000')
@@ -53,6 +53,41 @@ describe('Registered NotificationController', () => {
         done(err)
       })
   })
+  it('should create a notification for user', (done) => {
+    return NotificationService.create({
+      type: 'Test',
+      text: 'Test Message'
+    }, [userID])
+      .then(notification => {
+        notificationToken = notification.token
+        assert.ok(notification.token)
+        assert.equal(notification.type, 'Test')
+        assert.equal(notification.text, 'Test Message')
+        done()
+      })
+      .catch(err => {
+        done(err)
+      })
+  })
+  it('should get user notification by token', (done) => {
+    registeredUser
+      .get(`/user/notification/${notificationToken}`)
+      .expect(200)
+      .end((err, res) => {
+        assert.ok(res.body.token)
+        assert.equal(res.body.token, notificationToken)
+        assert.equal(res.body.type, 'Test')
+        assert.equal(res.body.subject, 'Test')
+        assert.equal(res.body.text, 'Test Message')
+        assert.equal(res.body.html, '<p>Test Message</p>\n')
+        assert.equal(res.body.send_email, true)
+        assert.equal(res.body.sent, true)
+        assert.equal(_.isString(res.body.sent_at), true)
+        assert.equal(res.body.users.length, 1)
+
+        done(err)
+      })
+  })
   it('should get user notifications', (done) => {
     registeredUser
       .get('/user/notifications')
@@ -70,8 +105,8 @@ describe('Registered NotificationController', () => {
         assert.equal(_.isNumber(parseInt(res.headers['x-pagination-page'])), true)
         assert.equal(_.isNumber(parseInt(res.headers['x-pagination-pages'])), true)
 
-        assert.equal(res.body.length, 0)
-        assert.equal(res.headers['x-pagination-total'], '0')
+        assert.equal(res.body.length, 1)
+        assert.equal(res.headers['x-pagination-total'], '1')
 
         done(err)
       })

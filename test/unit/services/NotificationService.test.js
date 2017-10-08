@@ -1,6 +1,7 @@
 'use strict'
 /* global describe, it */
 const assert = require('assert')
+const _ = require('lodash')
 
 describe('NotificationService', () => {
   let NotificationService
@@ -36,7 +37,7 @@ describe('NotificationService', () => {
         done(err)
       })
   })
-  it('should create a notification and send it', (done) => {
+  it('should create a notification and send it with no preferences', (done) => {
     User.create({
       email: 'scott@calistyletechnologies.com',
       first_name: 'Scott'
@@ -50,7 +51,7 @@ describe('NotificationService', () => {
         }, [user.id])
       })
       .then(notification => {
-        // console.log('THIS NOTIFICATION', notification)
+        console.log('THIS NOTIFICATION', notification)
         assert.ok(notification.id)
         assert.ok(notification.token)
         assert.equal(notification.type, 'Test')
@@ -59,7 +60,7 @@ describe('NotificationService', () => {
         assert.equal(notification.html, '<p>Test Message</p>\n')
         assert.equal(notification.send_email, true)
         assert.equal(notification.sent, true)
-        assert.ok(notification.sent_at)
+        assert.equal(_.isDate(notification.sent_at), true)
         assert.equal(notification.users.length, 1)
 
         done()
@@ -92,7 +93,7 @@ describe('NotificationService', () => {
         assert.equal(notification.html, '<p>Test Message</p>\n')
         assert.equal(notification.send_email, true)
         assert.equal(notification.sent, true)
-        assert.ok(notification.sent_at)
+        assert.equal(_.isDate(notification.sent_at), true)
         assert.equal(notification.users.length, 1)
 
         done()

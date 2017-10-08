@@ -17,6 +17,12 @@ module.exports = class NotificationController extends Controller {
   findById(req, res) {
     const orm = this.app.orm
     const Notification = orm['Notification']
+
+    if (!req.params.id) {
+      const err = new Error('Notification missing identifier')
+      return res.serverError(err)
+    }
+
     Notification.findByIdDefault(req.params.id, {})
       .then(notification => {
         if (!notification) {
@@ -40,10 +46,16 @@ module.exports = class NotificationController extends Controller {
   findByToken(req, res) {
     const orm = this.app.orm
     const Notification = orm['Notification']
+
+    if (!req.params.token) {
+      const err = new Error('Notification missing identifier')
+      return res.serverError(err)
+    }
+
     Notification.findByTokenDefault(req.params.token)
       .then(notification => {
         if (!notification) {
-          throw new Errors.FoundError(Error(`Notification handle ${ req.params.token } not found`))
+          throw new Errors.FoundError(Error(`Notification token ${ req.params.token } not found`))
         }
         return this.app.services.ProxyPermissionsService.sanitizeResult(req, notification)
       })
@@ -63,6 +75,12 @@ module.exports = class NotificationController extends Controller {
   resolve(req, res) {
     const orm = this.app.orm
     const Notification = orm['Notification']
+
+    if (!req.params.notification) {
+      const err = new Error('Notification missing identifier')
+      return res.serverError(err)
+    }
+
     Notification.resolve(req.params.notification)
       .then(notification => {
         if (!notification) {
@@ -137,9 +155,15 @@ module.exports = class NotificationController extends Controller {
       return res.status(401).send(err)
     }
     Notification.findAndCountDefault({
-      where: {
-        '$users.id$': id
-      },
+      include: [
+        {
+          model: this.app.orm['User'],
+          as: 'users',
+          where: {
+            id: id
+          }
+        }
+      ],
       order: sort,
       offset: offset,
       // limit: limit
