@@ -12,20 +12,31 @@ module.exports = class NotificationService extends Service {
   /**
    *
    * @param notification
+   * @param users
    * @param options
-   * @returns {notification}
    */
   create(notification, users, options) {
     options = options || {}
+    users = users || []
     const Notification = this.app.orm['Notification']
+    const User = this.app.orm['User']
+
     let resNotification
     return Notification.createDefault(notification, options)
       .then(createdNotification => {
         if (!createdNotification) {
           throw new Error('Notification was not created')
         }
+
         resNotification = createdNotification
-        return resNotification.setUsers(users)
+
+        return Notification.sequelize.Promise.mapSeries(users, user => {
+          return User.resolve(user, {transaction: options.transaction || null})
+        })
+      })
+      .then(_users => {
+        _users = _users || []
+        return resNotification.setUsers(_users.map(u => u.id), {transaction: options.transaction || null})
       })
       .then(() => {
         return resNotification.send({transaction: options.transaction})

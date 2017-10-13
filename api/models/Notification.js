@@ -160,6 +160,11 @@ module.exports = class Notification extends Model {
               this.sent_at = new Date(Date.now())
               return this
             },
+            /**
+             *
+             * @param options
+             * @returns {*}
+             */
             send: function(options) {
               options = options || {}
               const sendType = this.template_name && this.template_name !== '' ? 'sendTemplate' : 'send'
@@ -170,7 +175,7 @@ module.exports = class Notification extends Model {
 
               return this.resolveEmailUsers({transaction: options.transaction || null})
                 .then(emailUsers => {
-                  if (emailUsers.length > 0) {
+                  if (emailUsers && emailUsers.length > 0) {
                     const emailUsers = this.users.filter(user => user.email)
                     const users = emailUsers.map(user => {
                       if (user)
@@ -207,7 +212,7 @@ module.exports = class Notification extends Model {
                   }
                 })
                 .then(emails => {
-                  emails = emails.filter(email => email)
+                  // emails = emails.filter(email => email)
                   // console.log('TOTAL SENT', emails.length, this)
                   if (emails.length > 0) {
                     app.log.debug('EMAILS SENT', this.token, emails.length)
@@ -234,16 +239,21 @@ module.exports = class Notification extends Model {
             },
             resolveUsers: function(options) {
               options = options || {}
-              if (this.users && options.reload !== true) {
+              if (
+                this.users
+                && this.users.length > 0
+                && this.users.every(u => u instanceof app.orm['User'].Instance)
+                && options.reload !== true
+              ) {
                 return Promise.resolve(this)
               }
               else {
                 return this.getUsers({transaction: options.transaction || null})
-                  .then(users => {
-                    users = users || []
-                    this.users = users
-                    this.setDataValue('users', users)
-                    this.set('users', users)
+                  .then(_users => {
+                    _users = _users || []
+                    this.users = _users
+                    this.setDataValue('users', _users)
+                    this.set('users', _users)
                     return this
                   })
               }
@@ -257,9 +267,12 @@ module.exports = class Notification extends Model {
             resolveEmailUsers: function(options) {
               options = options || {}
               let emailUsers = []
-              return this.resolveUsers({transaction: options.transaction || null})
+              return this.resolveUsers({
+                transaction: options.transaction || null,
+                reload: options.reload || null
+              })
                 .then(() => {
-                  if (this.users.length > 0) {
+                  if (this.users && this.users.length > 0) {
                     // List of eligible users
                     emailUsers = this.users.map(user => {
                       let send = true
@@ -274,6 +287,7 @@ module.exports = class Notification extends Model {
                       if (!user.preferences) {
                         user.preferences = {}
                       }
+
                       if (typeof user.preferences === 'string') {
                         try {
                           user.preferences = JSON.parse(user.preferences)
@@ -309,6 +323,7 @@ module.exports = class Notification extends Model {
                       ) {
                         send = false
                       }
+
                       return send === true
                     })
                   }
