@@ -39,7 +39,7 @@ if (ORM === 'waterline') {
   packs.push(require('trailpack-waterline'))
 }
 else if (ORM === 'sequelize') {
-  packs.push(require('trailpack-sequelize'))
+  packs.push(require('trailpack-proxy-sequelize'))
   if (DIALECT == 'postgres') {
     stores.sqlitedev = {
       database: 'ProxyNotifications',
@@ -113,7 +113,7 @@ const App = {
                 findOneDefault: ModelPermissions.config(app, Sequelize).options.classMethods.findOneDefault,
                 resolve: ModelPassport.config(app, Sequelize).options.classMethods.resolve
               },
-              instanceMethods: _.defaults({}, ModelPermissions.config(app, Sequelize).options.instanceMethods)
+              instanceMethods: _.defaults({}, ModelPermissions.config(app, Sequelize).options.instanceMethods, ModelPassport.config(app, Sequelize).options.instanceMethods)
             }
           }
         }
@@ -126,8 +126,8 @@ const App = {
     }
   },
   pkg: {
-    name: 'trailpack-proxy-cart-test',
-    version: '1.0.0'
+    name: 'trailpack-proxy-notifications-test',
+    version: '2.0.0'
   },
   config: {
     database: {
@@ -202,7 +202,7 @@ const App = {
     },
     proxyEngine: {
       live_mode: false,
-      worker: 'testProfile'
+      profile: 'testProfile'
     }
   }
 }

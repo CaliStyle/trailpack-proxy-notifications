@@ -34,7 +34,6 @@ module.exports = class User extends Model {
     }
   }
   static schema(app, Sequelize) {
-    const schema = {}
-    return schema
+    return {}
   }
 }
