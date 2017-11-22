@@ -188,9 +188,15 @@ module.exports = class NotificationController extends Controller {
    */
   registerOpen(req, res) {
     const NotificationService = this.app.services.NotificationService
+    const user = req.params.id
     if (!req.params.notification) {
       const err = new Error('Notification missing identifier')
       return res.serverError(err)
+    }
+
+    // Monkey patch the request user if the param is present.
+    if (user) {
+      req.user = user
     }
 
     NotificationService.registerOpen(req.params.notification, {req: req})
@@ -208,9 +214,15 @@ module.exports = class NotificationController extends Controller {
    */
   registerClick(req, res) {
     const NotificationService = this.app.services.NotificationService
+    const user = req.params.id
     if (!req.params.notification) {
       const err = new Error('Notification missing identifier')
       return res.serverError(err)
+    }
+
+    // Monkey patch the request user if the param is present.
+    if (user) {
+      req.user = user
     }
 
     NotificationService.registerClick(req.params.notification, {req: req})

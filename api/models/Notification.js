@@ -225,12 +225,12 @@ module.exports = class Notification extends Model {
           },
 
           open: function(user, options = {}) {
-            this.total_clicks++
+            this.total_opens++
             if (!user) {
-              return this.userOpened(user, options)
+              return Promise.resolve(this)
             }
             else {
-              return Promise.resolve(this)
+              return this.userOpened(user, options)
             }
           },
           /**
@@ -241,7 +241,7 @@ module.exports = class Notification extends Model {
            */
           userOpened: function (user, options) {
             options = options || {}
-            return app.orm['ItemNotification'].update({ opened: true },{
+            return app.orm['ItemNotification'].update({ opened: true }, {
               where: {
                 notification_id: this.id,
                 model: 'user',
@@ -250,6 +250,10 @@ module.exports = class Notification extends Model {
               transaction: options.transaction || null
             })
               .then(() => {
+                return this
+              })
+              .catch(err => {
+                app.log.error(err)
                 return this
               })
           },
