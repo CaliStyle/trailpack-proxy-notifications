@@ -106,7 +106,7 @@ module.exports = class NotificationController extends Controller {
     const Notification = orm['Notification']
     const limit = Math.max(0, req.query.limit || 10)
     const offset = Math.max(0, req.query.offset || 0)
-    const sort = req.query.sort || 'created_at DESC'
+    const sort = req.query.sort || [['created_at', 'DESC']]
     const where = this.app.services.ProxyEngineService.jsonCritera(req.query.where)
     Notification.findAndCountDefault({
       where: where,
@@ -128,7 +128,7 @@ module.exports = class NotificationController extends Controller {
   }
 
   /**
-   *
+   * Get User's notifications
    * @param req
    * @param res
    */
@@ -137,7 +137,7 @@ module.exports = class NotificationController extends Controller {
     const Notification = orm['Notification']
     const limit = Math.max(0, req.query.limit || 10)
     const offset = Math.max(0, req.query.offset || 0)
-    const sort = req.query.sort || 'created_at DESC'
+    const sort = req.query.sort || [['created_at','DESC']]
     // const where = this.app.services.ProxyEngineService.jsonCritera(req.query.where)
 
     if (!req.user && !req.params.id) {
@@ -173,6 +173,47 @@ module.exports = class NotificationController extends Controller {
         this.app.services.ProxyEngineService.paginate(res, notifications.count, limit, offset, sort)
         return this.app.services.ProxyPermissionsService.sanitizeResult(req, notifications.rows)
       })
+      .then(result => {
+        return res.json(result)
+      })
+      .catch(err => {
+        return res.serverError(err)
+      })
+  }
+
+  /**
+   * Register that a user remotely opened a notification
+   * @param req
+   * @param res
+   */
+  registerOpen(req, res) {
+    const NotificationService = this.app.services.NotificationService
+    if (!req.params.notification) {
+      const err = new Error('Notification missing identifier')
+      return res.serverError(err)
+    }
+
+    NotificationService.registerOpen(req.params.notification, {req: req})
+      .then(result => {
+        return res.json(result)
+      })
+      .catch(err => {
+        return res.serverError(err)
+      })
+  }
+  /**
+   * Register that a user remotely clicked a notification
+   * @param req
+   * @param res
+   */
+  registerClick(req, res) {
+    const NotificationService = this.app.services.NotificationService
+    if (!req.params.notification) {
+      const err = new Error('Notification missing identifier')
+      return res.serverError(err)
+    }
+
+    NotificationService.registerClick(req.params.notification, {req: req})
       .then(result => {
         return res.json(result)
       })

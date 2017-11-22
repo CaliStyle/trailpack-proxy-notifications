@@ -54,12 +54,48 @@ module.exports = class NotificationService extends Service {
     const Notification = this.app.orm['Notification']
     let resNotification
     return Notification.resolve(notification, options)
-      .then(foundNotification => {
-        if (!foundNotification) {
+      .then(_notification => {
+        if (!_notification) {
           throw new Errors.FoundError(Error(`Notification ${notification} not found`))
         }
-        resNotification = foundNotification
+        resNotification = _notification
         return resNotification.send({transaction: options.transaction || null})
+      })
+  }
+
+  registerClick(notification, options) {
+    options = options || {}
+    const Notification = this.app.orm['Notification']
+    const user = options.req && options.req.user ? options.req.user : null
+    let resNotification
+    return Notification.resolve(notification, options)
+      .then(_notification => {
+        if (!_notification) {
+          throw new Errors.FoundError(Error(`Notification ${notification} not found`))
+        }
+        resNotification = _notification
+        return resNotification.click(user, {transaction: options.transaction || null})
+      })
+      .then(() => {
+        return resNotification.save({transaction: options.transaction || null})
+      })
+  }
+
+  registerOpen(notification, options) {
+    options = options || {}
+    const Notification = this.app.orm['Notification']
+    const user = options.req && options.req.user ? options.req.user : null
+    let resNotification
+    return Notification.resolve(notification, options)
+      .then(_notification => {
+        if (!_notification) {
+          throw new Errors.FoundError(Error(`Notification ${notification} not found`))
+        }
+        resNotification = _notification
+        return resNotification.open(user, {transaction: options.transaction || null})
+      })
+      .then(() => {
+        return resNotification.save({transaction: options.transaction || null})
       })
   }
 

@@ -1,6 +1,8 @@
+exports.analytics = require('./analytics')
+exports.controllers = require('./controllers')
 exports.crons = require('./crons')
-exports.tasks = require('./tasks')
 exports.events = require('./events')
 exports.models = require('./models')
 exports.services = require('./services')
-exports.controllers = require('./controllers')
+exports.tasks = require('./tasks')
+

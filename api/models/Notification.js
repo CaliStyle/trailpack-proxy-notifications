@@ -10,6 +10,7 @@ const _ = require('lodash')
 const Errors = require('proxy-engine-errors')
 const helpers = require('proxy-engine-helpers')
 const queryDefaults = require('../utils/queryDefaults')
+const PROTOCOLS = require('../../lib').Enums.PROTOCOLS
 
 /**
  * @module Notification
@@ -21,6 +22,9 @@ module.exports = class Notification extends Model {
     return {
       options: {
         underscored: true,
+        enums: {
+          PROTOCOLS: PROTOCOLS
+        },
         hooks: {
           beforeCreate: (values, options) => {
             if (!values.token) {
@@ -214,6 +218,27 @@ module.exports = class Notification extends Model {
                 }
               })
           },
+
+          click: function(user, options = {}) {
+            this.total_clicks++
+            return Promise.resolve(this)
+          },
+
+          open: function(user, options = {}) {
+            this.total_clicks++
+            if (!user) {
+              return this.userOpened(user, options)
+            }
+            else {
+              return Promise.resolve(this)
+            }
+          },
+          /**
+           * Register that a User Opened a Notification
+           * @param user
+           * @param options
+           * @returns {Promise.<TResult>}
+           */
           userOpened: function (user, options) {
             options = options || {}
             return app.orm['ItemNotification'].update({ opened: true },{
@@ -228,6 +253,11 @@ module.exports = class Notification extends Model {
                 return this
               })
           },
+          /**
+           *
+           * @param options
+           * @returns {*}
+           */
           resolveUsers: function(options) {
             options = options || {}
             if (
@@ -342,7 +372,8 @@ module.exports = class Notification extends Model {
       },
       // Protocol to send email
       protocol: {
-        type: Sequelize.STRING,
+        type: Sequelize.ENUM,
+        values: _.values(PROTOCOLS),
         defaultValue: app.config.proxyGenerics.email_provider.options.protocol
       },
       // Host to send email from
@@ -380,6 +411,14 @@ module.exports = class Notification extends Model {
       // Html version of the notification
       html: {
         type: Sequelize.TEXT
+      },
+      total_opens: {
+        type: Sequelize.INTEGER,
+        defaultValue: 0
+      },
+      total_clicks: {
+        type: Sequelize.INTEGER,
+        defaultValue: 0
       },
       // If an email copy of the notification should be sent
       send_email: {

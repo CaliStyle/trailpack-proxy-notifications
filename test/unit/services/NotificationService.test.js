@@ -7,7 +7,7 @@ describe('NotificationService', () => {
   let NotificationService
   let Notification
   let User
-  let userId
+  let userId, notificationId
 
   it('should exist', () => {
     assert(global.app.api.services['NotificationService'])
@@ -51,7 +51,7 @@ describe('NotificationService', () => {
         }, [user.id])
       })
       .then(notification => {
-        console.log('THIS NOTIFICATION', notification)
+        // console.log('THIS NOTIFICATION', notification)
         assert.ok(notification.id)
         assert.ok(notification.token)
         assert.equal(notification.type, 'Test')
@@ -189,6 +189,7 @@ describe('NotificationService', () => {
       })
       .then(notification => {
         // console.log('THIS NOTIFICATION', notification)
+        notificationId = notification.id
         assert.ok(notification.id)
         assert.ok(notification.token)
         assert.equal(notification.type, 'test')

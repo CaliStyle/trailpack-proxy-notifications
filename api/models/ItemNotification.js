@@ -11,7 +11,18 @@ module.exports = class ItemNotification extends Model {
   static config (app, Sequelize) {
     return {
       options: {
-        underscored: true
+        underscored: true,
+        classMethods: {
+          /**
+           * Associate the Model
+           * @param models
+           */
+          associate: (models) => {
+            models.ItemNotification.belongsTo(models.Notification, {
+              foreignKey: 'notification_id'
+            })
+          }
+        }
       }
     }
   }
